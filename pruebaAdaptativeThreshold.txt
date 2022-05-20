@@ -1,0 +1,34 @@
+import io
+from flask import Flask, jsonify, request
+from PIL import Image
+import numpy as np
+import cv2 as cv
+from matplotlib import pyplot as plt
+
+def testPost():
+    data = request.get_data()
+    img = Image.open(io.BytesIO(data))
+    #simple method
+    #img_gray_array = np.array(img.convert('L'))
+    #img_bool = img_gray_array > 127
+
+    #testing adaptative thresholding
+    imgSize = np.shape(img)
+    blockSize = 1 / 8 * imgSize[0] / 2 * 2 + 1
+    blockSize = int(blockSize)
+    if blockSize <= 1:
+        blockSize = imgSize[0] / 2 * 2 + 1
+    elif blockSize % 2 == 0:
+        blockSize = blockSize + 1
+    const = -10
+
+    img_gray_array = np.array(img.convert('L'))
+    th2 = cv.adaptiveThreshold(
+        img_gray_array, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, blockSize, const
+    )
+    print(th2)
+    plt.imshow(th2, 'gray')
+    plt.show()
+    
+    #print(img_bool)
+    return jsonify({'message' : 'It works!'})
