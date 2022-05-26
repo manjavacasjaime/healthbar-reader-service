@@ -90,13 +90,42 @@ def get_true_bool_percentage_at_line(img: np.ndarray, x: int, i: int, j: int):
     result = round(result, 2)
     return result
 
-@app.route('/', methods=['GET'])
-def test():
-    return jsonify({'message' : 'It works!'})
+#Get tuple (bool, float) with bool is_life_bar_found and float life_percentage
+#Obtain this data from a fullHD (1920, 1080) Image
+def get_life_percentage_from_apex_image(img: Image):
+    img_gray_array = np.array(img.convert('L'))
+    img_bool = img_gray_array > 129
 
-@app.route('/post', methods=['GET', 'POST'])
-def test_post():
+    is_upper_white_bar = check_bool_at_lines(img_bool, True, 954, 955, 64, 401)
+    is_bottom_white_bar = check_bool_at_lines(img_bool, True, 1027, 1028, 88, 429)
+    is_upper_black_bar = check_bool_at_lines(img_bool, False, 956, 967, 217, 392)
+    is_middle_black_bar = check_bool_at_lines(img_bool, False, 986, 1007, 177, 411)
+    is_bottom_black_bar = check_bool_at_lines(img_bool, False, 1020, 1026, 217, 392)
+
+    print('Has upper bar: ' + str(is_upper_white_bar))
+    print('Has bottom bar: ' + str(is_bottom_white_bar))
+    print('Has black upper bar: ' + str(is_upper_black_bar))
+    print('Has black middle bar: ' + str(is_middle_black_bar))
+    print('Has black bottom bar: ' + str(is_bottom_black_bar))
+
+    is_life_bar_found = (
+        is_upper_white_bar and is_bottom_white_bar and
+        is_upper_black_bar and is_middle_black_bar and
+        is_bottom_black_bar
+    )
+    life_percentage = 0
+    
+    if (is_life_bar_found):
+        life_percentage = get_true_bool_percentage_at_line(img_bool, 1014, 177, 413)
+        print('Life percentage: ' + str(life_percentage))
+
+    return (is_life_bar_found, life_percentage)
+
+
+@app.route('/healthbar-reader-service/apex/fullhd', methods=['POST'])
+def read_apex_image_fullhd():
     data = request.get_data()
+
     error_message = ''
     try:
         img = Image.frombytes('RGBA', (1920, 1080), data)
@@ -105,34 +134,11 @@ def test_post():
         error_message = str(e)
         is_image_identified = False
     
-    life_percentage = 0
     is_life_bar_found = False
+    life_percentage = 0
 
     if is_image_identified:
-        img_gray_array = np.array(img.convert('L'))
-        img_bool = img_gray_array > 129
-
-        is_upper_white_bar = check_bool_at_lines(img_bool, True, 954, 955, 64, 401)
-        is_bottom_white_bar = check_bool_at_lines(img_bool, True, 1027, 1028, 88, 429)
-        is_upper_black_bar = check_bool_at_lines(img_bool, False, 956, 967, 217, 392)
-        is_middle_black_bar = check_bool_at_lines(img_bool, False, 986, 1007, 177, 411)
-        is_bottom_black_bar = check_bool_at_lines(img_bool, False, 1020, 1026, 217, 392)
-
-        print('Has upper bar: ' + str(is_upper_white_bar))
-        print('Has bottom bar: ' + str(is_bottom_white_bar))
-        print('Has black upper bar: ' + str(is_upper_black_bar))
-        print('Has black middle bar: ' + str(is_middle_black_bar))
-        print('Has black bottom bar: ' + str(is_bottom_black_bar))
-
-        is_life_bar_found = (
-            is_upper_white_bar and is_bottom_white_bar and
-            is_upper_black_bar and is_middle_black_bar and
-            is_bottom_black_bar
-        )
-        
-        if (is_life_bar_found):
-            life_percentage = get_true_bool_percentage_at_line(img_bool, 1014, 177, 413)
-            print('Life percentage: ' + str(life_percentage))
+        (is_life_bar_found, life_percentage) = get_life_percentage_from_apex_image(img)
 
     return jsonify({
         'isImageIdentified' : is_image_identified,
@@ -140,6 +146,7 @@ def test_post():
         'isLifeBarFound' : is_life_bar_found,
         'lifePercentage' : life_percentage,
     })
+    
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
