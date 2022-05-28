@@ -152,6 +152,39 @@ def read_apex_image_fullhd():
         'isLifeBarFound' : is_life_bar_found,
         'lifePercentage' : life_percentage,
     })
+
+#Get tuple (bool, float) with bool is_life_bar_found and float life_percentage
+#Obtain this data from a fullHD (1920, 1079) Image
+def get_life_percentage_from_valorant_image(img: Image):
+    is_life_bar_found = False
+    life_percentage = 0
+
+    return (is_life_bar_found, life_percentage)
+
+@app.route('/healthbar-reader-service/valorant/fullhd', methods=['POST'])
+def read_valorant_image_fullhd():
+    data = request.get_data()
+
+    error_message = ''
+    try:
+        img = Image.frombytes('RGBA', (1920, 1079), data)
+        is_image_identified = True
+    except IOError as e:
+        error_message = str(e)
+        is_image_identified = False
+    
+    is_life_bar_found = False
+    life_percentage = 0
+
+    if is_image_identified:
+        (is_life_bar_found, life_percentage) = get_life_percentage_from_valorant_image(img)
+
+    return jsonify({
+        'isImageIdentified' : is_image_identified,
+        'errorMessage' : error_message,
+        'isLifeBarFound' : is_life_bar_found,
+        'lifePercentage' : life_percentage,
+    })
     
 
 if __name__ == '__main__':
