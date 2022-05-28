@@ -10,7 +10,7 @@ def testPost():
     img = Image.open(io.BytesIO(data))
     #simple method
     #img_gray_array = np.array(img.convert('L'))
-    #img_bool = img_gray_array > 127
+    #img_bool = img_gray_array > 129
 
     #testing adaptative thresholding
     imgSize = np.shape(img)

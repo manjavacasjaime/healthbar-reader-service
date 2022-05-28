@@ -96,27 +96,33 @@ def get_life_percentage_from_apex_image(img: Image):
     img_gray_array = np.array(img.convert('L'))
     img_bool = img_gray_array > 129
 
-    is_upper_white_bar = check_bool_at_line(img_bool, True, 955, 73, 335)
-    is_bottom_white_bar = check_bool_at_lines(img_bool, True, 1027, 1028, 98, 427)
+    is_upper_left_map_bar = check_bool_at_lines(img_bool, True, 48, 49, 52, 123)
+    is_upper_right_map_bar = check_bool_at_lines(img_bool, True, 48, 49, 215, 286)
+    is_bottom_left_map_bar = check_bool_at_lines(img_bool, True, 290, 291, 52, 123)
+    is_bottom_right_map_bar = check_bool_at_lines(img_bool, True, 290, 291, 215, 286)
+
     is_upper_black_bar = check_bool_at_lines(img_bool, False, 956, 967, 217, 329)
     is_middle_black_bar = check_bool_at_lines(img_bool, False, 986, 995, 177, 329)
     is_bottom_black_bar = check_bool_at_lines(img_bool, False, 1020, 1026, 217, 392)
 
-    print('Has upper bar: ' + str(is_upper_white_bar))
-    print('Has bottom bar: ' + str(is_bottom_white_bar))
+    print('Has upper left map bar: ' + str(is_upper_left_map_bar))
+    print('Has upper right map bar: ' + str(is_upper_right_map_bar))
+    print('Has bottom left map bar: ' + str(is_bottom_left_map_bar))
+    print('Has bottom right map bar: ' + str(is_bottom_right_map_bar))
     print('Has black upper bar: ' + str(is_upper_black_bar))
     print('Has black middle bar: ' + str(is_middle_black_bar))
     print('Has black bottom bar: ' + str(is_bottom_black_bar))
 
     is_life_bar_found = (
-        is_upper_white_bar and is_bottom_white_bar and
+        is_upper_left_map_bar and is_upper_right_map_bar and
+        is_bottom_left_map_bar and is_bottom_right_map_bar and
         is_upper_black_bar and is_middle_black_bar and
         is_bottom_black_bar
     )
     life_percentage = 0
     
     if (is_life_bar_found):
-        life_percentage = get_true_bool_percentage_at_line(img_bool, 1014, 177, 413)
+        life_percentage = get_true_bool_percentage_at_line(img_bool, 1017, 177, 413)
         print('Life percentage: ' + str(life_percentage))
 
     return (is_life_bar_found, life_percentage)
