@@ -3,6 +3,7 @@ from PIL import Image
 import numpy as np
 import sys
 from matplotlib import pyplot as plt
+import pytesseract as tess
 
 app = Flask(__name__)
 
@@ -121,7 +122,7 @@ def get_life_percentage_from_apex_image(img: Image):
     )
     life_percentage = 0
     
-    if (is_life_bar_found):
+    if is_life_bar_found:
         life_percentage = get_true_bool_percentage_at_line(img_bool, 1017, 177, 413)
         print('Life percentage: ' + str(life_percentage))
 
@@ -157,9 +158,33 @@ def read_apex_image_fullhd():
 #Obtain this data from a fullHD (1920, 1079) Image
 def get_life_percentage_from_valorant_image(img: Image):
     is_life_bar_found = False
-    life_percentage = 0
+
+    #determine if is_life_bar_found
+    is_life_bar_found = True
+
+    left = 575
+    top = 1000
+    right = 650
+    bottom = 1045
+
+    #(left, top) is the upper left pixel of the rectangle
+    #(right, bottom) is the lower right pixel
+    box = (left, top, right, bottom)
+    img_cropped = img.crop(box)
+
+    img_cropped_gray = img_cropped.convert('L')
+    image_bin = img_cropped_gray.point( lambda p: 255 if p <= 129 else 0 )
+
+    life_percentage = int(tess.image_to_string(image_bin, lang='eng',
+        config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789'))
+
+    if is_life_bar_found and life_percentage > 0 and life_percentage <= 100:
+        life_percentage = life_percentage / 100
+    else:
+        life_percentage = 0
 
     return (is_life_bar_found, life_percentage)
+
 
 @app.route('/healthbar-reader-service/valorant/fullhd', methods=['POST'])
 def read_valorant_image_fullhd():
