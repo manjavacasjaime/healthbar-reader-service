@@ -77,6 +77,21 @@ def check_bool_at_line(img: np.ndarray, boolToCheck: bool, x: int, i: int, j: in
     
     return result
 
+#Check bool at column i from line x to line y (inclusive)
+def check_bool_at_column(img: np.ndarray, boolToCheck: bool, i: int, x: int, y: int):
+    index = x
+    result = True
+    myBool = boolToCheck
+    while(index <= y):
+        if img[index][i] == myBool:
+            index+=1
+        else:
+            print('Bar not found at: (' + str(index) + ', ' + str(i) + ')')
+            result = False
+            break
+    
+    return result
+
 #Get the percentage of True bools at line x from index i to index j (inclusive)
 def get_true_bool_percentage_at_line(img: np.ndarray, x: int, i: int, j: int):
     true_pixels = 0
@@ -158,6 +173,26 @@ def read_apex_image_fullhd():
 #Obtain this data from a fullHD (1920, 1079) Image
 def get_life_percentage_from_valorant_image(img: Image):
     img_gray = img.convert('L')
+    img_gray_array = np.array(img_gray)
+    img_bool = img_gray_array > 200
+
+    #Checking if player is dead
+    is_center_white_bar = check_bool_at_column(img_bool, True, 30, 795, 800)
+    is_left_black_bar = check_bool_at_column(img_bool, False, 29, 795, 800)
+    is_right_black_bar = check_bool_at_column(img_bool, False, 31, 795, 800)
+
+    is_dead_white_bar_found = (
+        is_center_white_bar and is_left_black_bar and
+        is_right_black_bar
+    )
+
+    if is_dead_white_bar_found:
+        is_life_bar_found = True
+        life_percentage = 0
+        print('Is dead hud white bar found: ' + str(is_dead_white_bar_found))
+        print('Is healthbar found: ' + str(is_life_bar_found))
+        print('Life percentage: ' + str(life_percentage))
+        return (is_life_bar_found, life_percentage)
 
     left = 575
     top = 1000
