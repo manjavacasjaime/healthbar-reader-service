@@ -158,65 +158,37 @@ def read_apex_image_fullhd():
 #Obtain this data from a fullHD (1920, 1079) Image
 def get_life_percentage_from_valorant_image(img: Image):
     img_gray = img.convert('L')
-    img_gray_array = np.array(img_gray)
-    img_bool = img_gray_array > 129
 
-    is_left_white_bar= check_bool_at_line(img_bool, True, 1054, 540, 640)
-    is_upper_left_black_bar = check_bool_at_line(img_bool, False, 1053, 540, 640)
-    is_bottom_left_black_bar = check_bool_at_line(img_bool, False, 1055, 540, 640)
+    left = 575
+    top = 1000
+    right = 650
+    bottom = 1045
 
-    print('Has left white bar: ' + str(is_left_white_bar))
-    print('Has upper left black bar: ' + str(is_upper_left_black_bar))
-    print('Has bottom left black bar: ' + str(is_bottom_left_black_bar))
+    #(left, top) is the upper left pixel of the rectangle
+    #(right, bottom) is the lower right pixel
+    box = (left, top, right, bottom)
+    img_cropped_gray = img_gray.crop(box)
 
-    is_life_bar_found = (
-        is_left_white_bar and is_upper_left_black_bar and
-        is_bottom_left_black_bar
-    )
+    image_bin = img_cropped_gray.point( lambda p: 255 if p > 200 else 0 )
 
-    if not is_life_bar_found:
-        is_right_white_bar = check_bool_at_line(img_bool, True, 1054, 1278, 1376)
-        is_upper_right_black_bar = check_bool_at_line(img_bool, False, 1053, 1278, 1376)
-        is_bottom_right_black_bar = check_bool_at_line(img_bool, False, 1055, 1278, 1376)
+    life_percentage_str = tess.image_to_string(image_bin, lang='eng',
+        config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789')
+    
+    if not life_percentage_str:
+        is_life_bar_found = False
+        print('Is healthbar found: ' + str(is_life_bar_found))
+        return (is_life_bar_found, 0)
 
-        print('Has right white bar: ' + str(is_right_white_bar))
-        print('Has upper right black bar: ' + str(is_upper_right_black_bar))
-        print('Has bottom right black bar: ' + str(is_bottom_right_black_bar))
+    life_percentage = int(life_percentage_str)
 
-        is_life_bar_found = (
-            is_right_white_bar and is_upper_right_black_bar and
-            is_bottom_right_black_bar
-        )
-
-    if is_life_bar_found:
-        left = 575
-        top = 1000
-        right = 650
-        bottom = 1045
-
-        #(left, top) is the upper left pixel of the rectangle
-        #(right, bottom) is the lower right pixel
-        box = (left, top, right, bottom)
-        img_cropped_gray = img_gray.crop(box)
-
-        image_bin = img_cropped_gray.point( lambda p: 255 if p <= 129 else 0 )
-
-        life_percentage_str = tess.image_to_string(image_bin, lang='eng',
-            config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789')
-        
-        if not life_percentage_str:
-            return (False, 0)
-
-        life_percentage = int(life_percentage_str)
-
-        if life_percentage >= 1 and life_percentage <= 100:
-            life_percentage = life_percentage / 100
-            print('Life percentage: ' + str(life_percentage))
-        else:
-            is_life_bar_found = False
-            life_percentage = 0
+    if life_percentage >= 1 and life_percentage <= 100:
+        is_life_bar_found = True
+        life_percentage = life_percentage / 100
+        print('Life percentage: ' + str(life_percentage))
     else:
+        is_life_bar_found = False
         life_percentage = 0
+    print('Is healthbar found: ' + str(is_life_bar_found))
 
     return (is_life_bar_found, life_percentage)
 
