@@ -174,7 +174,7 @@ def read_apex_image_fullhd():
 def get_life_percentage_from_valorant_image(img: Image):
     img_gray = img.convert('L')
     img_gray_array = np.array(img_gray)
-    img_bool = img_gray_array > 200
+    img_bool = img_gray_array > 210
 
     #Checking if player is dead
     is_center_white_bar = check_bool_at_column(img_bool, True, 30, 795, 800)
@@ -204,7 +204,7 @@ def get_life_percentage_from_valorant_image(img: Image):
     box = (left, top, right, bottom)
     img_cropped_gray = img_gray.crop(box)
 
-    image_bin = img_cropped_gray.point( lambda p: 255 if p > 200 else 0 )
+    image_bin = img_cropped_gray.point( lambda p: 255 if p > 205 else 0 )
 
     life_percentage_str = tess.image_to_string(image_bin, lang='eng',
         config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789')
