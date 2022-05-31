@@ -110,30 +110,32 @@ def get_true_bool_percentage_at_line(img: np.ndarray, x: int, i: int, j: int):
 #Obtain this data from a fullHD (1920, 1080) Image
 def get_life_percentage_from_apex_image(img: Image):
     img_gray_array = np.array(img.convert('L'))
-    img_bool = img_gray_array > 129
+    img_bool = img_gray_array > 210
 
-    is_upper_left_map_bar = check_bool_at_lines(img_bool, True, 48, 49, 52, 123)
-    is_upper_right_map_bar = check_bool_at_lines(img_bool, True, 48, 49, 215, 286)
-    is_bottom_left_map_bar = check_bool_at_lines(img_bool, True, 290, 291, 52, 123)
-    is_bottom_right_map_bar = check_bool_at_lines(img_bool, True, 290, 291, 215, 286)
+    is_upper_left_map_bar = check_bool_at_lines(img_bool, True, 48, 49, 60, 120)
+    is_upper_right_map_bar = check_bool_at_lines(img_bool, True, 48, 49, 220, 280)
+    is_bottom_left_map_bar = check_bool_at_lines(img_bool, True, 290, 291, 60, 120)
+    is_bottom_right_map_bar = check_bool_at_lines(img_bool, True, 290, 291, 220, 280)
 
-    is_upper_black_bar = check_bool_at_lines(img_bool, False, 956, 967, 217, 329)
-    is_middle_black_bar = check_bool_at_lines(img_bool, False, 986, 995, 177, 329)
-    is_bottom_black_bar = check_bool_at_lines(img_bool, False, 1020, 1026, 217, 392)
+    is_upper_left_map_black_bar = check_bool_at_line(img_bool, False, 50, 60, 120)
+    is_upper_right_map_black_bar = check_bool_at_line(img_bool, False, 50, 220, 280)
+    is_bottom_left_map_black_bar = check_bool_at_line(img_bool, False, 289, 60, 120)
+    is_bottom_right_map_black_bar = check_bool_at_line(img_bool, False, 289, 220, 280)
 
     print('Has upper left map bar: ' + str(is_upper_left_map_bar))
     print('Has upper right map bar: ' + str(is_upper_right_map_bar))
     print('Has bottom left map bar: ' + str(is_bottom_left_map_bar))
     print('Has bottom right map bar: ' + str(is_bottom_right_map_bar))
-    print('Has black upper bar: ' + str(is_upper_black_bar))
-    print('Has black middle bar: ' + str(is_middle_black_bar))
-    print('Has black bottom bar: ' + str(is_bottom_black_bar))
+    print('Has upper left black bar: ' + str(is_upper_left_map_black_bar))
+    print('Has upper right black bar: ' + str(is_upper_right_map_black_bar))
+    print('Has bottom left black bar: ' + str(is_bottom_left_map_black_bar))
+    print('Has bottom right black bar: ' + str(is_bottom_right_map_black_bar))
 
     is_life_bar_found = (
         is_upper_left_map_bar and is_upper_right_map_bar and
         is_bottom_left_map_bar and is_bottom_right_map_bar and
-        is_upper_black_bar and is_middle_black_bar and
-        is_bottom_black_bar
+        is_upper_left_map_black_bar and is_upper_right_map_black_bar and
+        is_bottom_left_map_black_bar and is_bottom_right_map_black_bar
     )
     life_percentage = 0
     
@@ -189,6 +191,7 @@ def get_life_percentage_from_valorant_image(img: Image):
 
     if is_in_lobby_screen:
         is_life_bar_found = False
+        print('Player found at lobby screen.')
         print('Is healthbar found: ' + str(is_life_bar_found))
         return (is_life_bar_found, 0)
 
@@ -205,7 +208,7 @@ def get_life_percentage_from_valorant_image(img: Image):
     if is_dead_white_bar_found:
         is_life_bar_found = True
         life_percentage = 0
-        print('Is dead hud white bar found: ' + str(is_dead_white_bar_found))
+        print('Player found at dead screen.')
         print('Is healthbar found: ' + str(is_life_bar_found))
         print('Life percentage: ' + str(life_percentage))
         return (is_life_bar_found, life_percentage)
