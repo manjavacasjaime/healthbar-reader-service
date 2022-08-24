@@ -4,6 +4,11 @@ import numpy as np
 import sys
 from matplotlib import pyplot as plt
 import pytesseract as tess
+import time
+
+min_response_time = 200000000.0
+max_response_time = 0.0
+avg_response_time = -1.0
 
 app = Flask(__name__)
 
@@ -148,6 +153,7 @@ def get_life_percentage_from_apex_image(img: Image):
 
 @app.route('/healthbar-reader-service/apex/fullhd', methods=['POST'])
 def read_apex_image_fullhd():
+    start_time = time.time()
     data = request.get_data()
 
     error_message = ''
@@ -163,6 +169,25 @@ def read_apex_image_fullhd():
 
     if is_image_identified:
         (is_life_bar_found, life_percentage) = get_life_percentage_from_apex_image(img)
+
+    global min_response_time
+    global max_response_time
+    global avg_response_time
+
+    response_time = time.time() - start_time
+    if min_response_time > response_time:
+        min_response_time = response_time
+    if max_response_time < response_time:
+        max_response_time = response_time
+
+    if avg_response_time == -1.0:
+        avg_response_time = response_time
+    else:
+        avg_response_time = (avg_response_time + response_time) / 2
+
+    print('MIN RESPONSE TIME: ' + str(min_response_time))
+    print('MAX RESPONSE TIME: ' + str(max_response_time))
+    print('AVG RESPONSE TIME: ' + str(avg_response_time))
 
     return jsonify({
         'isImageIdentified' : is_image_identified,
@@ -249,6 +274,7 @@ def get_life_percentage_from_valorant_image(img: Image):
 
 @app.route('/healthbar-reader-service/valorant/fullhd', methods=['POST'])
 def read_valorant_image_fullhd():
+    start_time = time.time()
     data = request.get_data()
 
     error_message = ''
@@ -264,6 +290,25 @@ def read_valorant_image_fullhd():
 
     if is_image_identified:
         (is_life_bar_found, life_percentage) = get_life_percentage_from_valorant_image(img)
+
+    global min_response_time
+    global max_response_time
+    global avg_response_time
+
+    response_time = time.time() - start_time
+    if min_response_time > response_time:
+        min_response_time = response_time
+    if max_response_time < response_time:
+        max_response_time = response_time
+
+    if avg_response_time == -1.0:
+        avg_response_time = response_time
+    else:
+        avg_response_time = (avg_response_time + response_time) / 2
+
+    print('MIN RESPONSE TIME: ' + str(min_response_time))
+    print('MAX RESPONSE TIME: ' + str(max_response_time))
+    print('AVG RESPONSE TIME: ' + str(avg_response_time))
 
     return jsonify({
         'isImageIdentified' : is_image_identified,
