@@ -135,27 +135,10 @@ def get_life_percentage_from_valorant_image(img: Image):
     img_gray_array = np.array(img_gray)
     img_bool = img_gray_array > 210
 
-    #Checking if player is in lobby screen
-    is_logo_center_left_white_bar = check_bool_at_column(img_bool, True, 16, 10, 15)
-    is_logo_center_right_white_bar = check_bool_at_column(img_bool, True, 17, 10, 15)
-    is_logo_left_black_bar = check_bool_at_column(img_bool, False, 15, 10, 15)
-    is_logo_right_black_bar = check_bool_at_column(img_bool, False, 18, 12, 15)
-
-    is_in_lobby_screen = (
-        is_logo_center_left_white_bar and is_logo_center_right_white_bar and
-        is_logo_left_black_bar and is_logo_right_black_bar
-    )
-
-    if is_in_lobby_screen:
-        is_life_bar_found = False
-        print('Player found at lobby screen.')
-        print('Is healthbar found: ' + str(is_life_bar_found))
-        return (is_life_bar_found, 0)
-
     #Checking if player is dead
-    is_center_white_bar = check_bool_at_column(img_bool, True, 30, 796, 800)
-    is_left_black_bar = check_bool_at_column(img_bool, False, 29, 796, 800)
-    is_right_black_bar = check_bool_at_column(img_bool, False, 31, 796, 800)
+    is_center_white_bar = check_bool_at_column(img_bool, True, 30, 796, 798)
+    is_left_black_bar = check_bool_at_column(img_bool, False, 29, 796, 798)
+    is_right_black_bar = check_bool_at_column(img_bool, False, 31, 796, 798)
 
     is_dead_white_bar_found = (
         is_center_white_bar and is_left_black_bar and
