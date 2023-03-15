@@ -1,58 +1,9 @@
 from flask import Flask, jsonify, request
 from PIL import Image
 import numpy as np
-import sys
-from matplotlib import pyplot as plt
 import pytesseract as tess
-import time
-
-min_response_time = 200000000.0
-max_response_time = 0.0
-avg_response_time = -1.0
 
 app = Flask(__name__)
-
-def show_binarized_image(img: Image, threshold: int):
-    image_gray = img.convert('L')
-    image_bin = image_gray.point( lambda p: 255 if p > threshold else 0 )
-    image_bin.show()
-
-def show_image_from_array(img: np.ndarray, mode: str):
-    plt.imshow(img, mode)
-    plt.show()
-
-#Line gets marked with threshold color
-def show_binarized_image_with_marked_line(img: np.ndarray, line: int, threshold: int):
-    for i in range(len(img)):
-        for j in range(len(img[i])):
-            if i == line and img[i][j] > threshold:
-                img[i][j] = threshold
-            elif img[i][j] > threshold:
-                img[i][j] = 255
-            else:
-                img[i][j] = 0
-    show_image_from_array(img, 'gray')
-
-#Column gets marked with threshold color
-def show_binarized_image_with_marked_column(img: np.ndarray, column: int, threshold: int):
-    for i in range(len(img)):
-        for j in range(len(img[i])):
-            if j == column and img[i][j] > threshold:
-                img[i][j] = threshold
-            elif img[i][j] > threshold:
-                img[i][j] = 255
-            else:
-                img[i][j] = 0
-    show_image_from_array(img, 'gray')
-
-#Requires the script to run as administrator
-def log(message: str):
-    old_stdout = sys.stdout
-    log_file = open('message.log', 'w')
-    sys.stdout = log_file
-    print(message)
-    sys.stdout = old_stdout
-    log_file.close()
 
 #Check bool at lines x to y (inclusive) from index i to index j (inclusive)
 def check_bool_at_lines(img: np.ndarray, boolToCheck: bool, x: int, y:int, i: int, j: int):
@@ -117,6 +68,7 @@ def get_life_percentage_from_apex_image(img: Image):
     img_gray_array = np.array(img.convert('L'))
     img_bool = img_gray_array > 210
 
+    #Checking if player's map is present on screen
     is_upper_left_map_bar = check_bool_at_lines(img_bool, True, 48, 49, 60, 120)
     is_upper_right_map_bar = check_bool_at_lines(img_bool, True, 48, 49, 220, 280)
     is_bottom_left_map_bar = check_bool_at_lines(img_bool, True, 290, 291, 60, 120)
@@ -153,7 +105,6 @@ def get_life_percentage_from_apex_image(img: Image):
 
 @app.route('/healthbar-reader-service/apex/fullhd', methods=['POST'])
 def read_apex_image_fullhd():
-    start_time = time.time()
     data = request.get_data()
 
     error_message = ''
@@ -169,25 +120,6 @@ def read_apex_image_fullhd():
 
     if is_image_identified:
         (is_life_bar_found, life_percentage) = get_life_percentage_from_apex_image(img)
-
-    global min_response_time
-    global max_response_time
-    global avg_response_time
-
-    response_time = time.time() - start_time
-    if min_response_time > response_time:
-        min_response_time = response_time
-    if max_response_time < response_time:
-        max_response_time = response_time
-
-    if avg_response_time == -1.0:
-        avg_response_time = response_time
-    else:
-        avg_response_time = (avg_response_time + response_time) / 2
-
-    print('MIN RESPONSE TIME: ' + str(min_response_time))
-    print('MAX RESPONSE TIME: ' + str(max_response_time))
-    print('AVG RESPONSE TIME: ' + str(avg_response_time))
 
     return jsonify({
         'isImageIdentified' : is_image_identified,
@@ -274,7 +206,6 @@ def get_life_percentage_from_valorant_image(img: Image):
 
 @app.route('/healthbar-reader-service/valorant/fullhd', methods=['POST'])
 def read_valorant_image_fullhd():
-    start_time = time.time()
     data = request.get_data()
 
     error_message = ''
@@ -290,25 +221,6 @@ def read_valorant_image_fullhd():
 
     if is_image_identified:
         (is_life_bar_found, life_percentage) = get_life_percentage_from_valorant_image(img)
-
-    global min_response_time
-    global max_response_time
-    global avg_response_time
-
-    response_time = time.time() - start_time
-    if min_response_time > response_time:
-        min_response_time = response_time
-    if max_response_time < response_time:
-        max_response_time = response_time
-
-    if avg_response_time == -1.0:
-        avg_response_time = response_time
-    else:
-        avg_response_time = (avg_response_time + response_time) / 2
-
-    print('MIN RESPONSE TIME: ' + str(min_response_time))
-    print('MAX RESPONSE TIME: ' + str(max_response_time))
-    print('AVG RESPONSE TIME: ' + str(avg_response_time))
 
     return jsonify({
         'isImageIdentified' : is_image_identified,
